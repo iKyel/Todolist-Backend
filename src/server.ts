@@ -14,7 +14,7 @@ dotenv.config(); // Load các biến môi trường từ file .env
 
 // variables
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3412;
 
 // sử dụng CORS Middleware
 app.use(cors());
