@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
 
 // db
 import connectDB from "./connection/db";
@@ -19,6 +20,9 @@ const port = process.env.PORT || 3412;
 
 // sử dụng CORS Middleware
 app.use(cors());
+
+// cookie-parser
+app.use(cookieParser())
 
 // sử dụng middleware để phân tích dữ liệu JSON
 app.use(express.json());

@@ -1,38 +1,31 @@
 import jwt from "jsonwebtoken";
-import { Request, Response, NextFunction } from "express";
+import { User, UserModel } from "../models/user.models"; 
+import { Response, NextFunction } from "express";
+import { AuthenticatedRequest } from "../interface/AutheticatedRequest";
 
-interface IUserPayload {
-  id: string;
-}
+const authenticate = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  let token = req.cookies.jwt; 
 
-interface IRequest extends Request {
-  user?: IUserPayload;
-}
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: string };
+      
+      // Find the user and exclude the password field
+      const user = await UserModel.findById(decoded.userId).select("-password").exec();
 
-const JWT_SECRET = process.env.JWT_SECRET || "";
+      if (!user) {
+        res.status(401);
+        throw new Error("User not found");
+      }
 
-// Middleware to verify JWT tokens
-export const verifyToken = async (
-  req: IRequest,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    let token = req.header("Authorization");
-
-    if (!token) {
-        res.status(403).send("Access denied");
-        return;
+      req.user = user as User; 
+      next(); 
+    } catch (error: any) {
+      res.status(401).json({ error: error.message });
     }
-
-    if (token.startsWith("Bearer ")) {
-      token = token.slice(7); // Remove "Bearer " from the token
-    }
-
-    const verified = jwt.verify(token, JWT_SECRET) as IUserPayload;
-    req.user = verified;
-    next();
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+  } else {
+    res.status(401).json({ error: "Authentication failed, no token provided" });
   }
 };
+
+export default authenticate;

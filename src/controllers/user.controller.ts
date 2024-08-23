@@ -1,10 +1,13 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { UserModel } from "../models/user.models";
+import { UserModel, User } from "../models/user.models";
 import { Request, Response } from "express";
 import generationToken from "../utils/createToken";
+import { AuthenticatedRequest } from "../interface/AutheticatedRequest";
 
 const jwtSecret = process.env.JWT_SECRET || "";
+
+
 
 /* Dang ky */
 export const register = async (req: Request, res: Response) => {
@@ -57,14 +60,38 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const logout = async(req: Request, res: Response) => {
+
+export const logout = async (req: Request, res: Response) => {
   try {
-    res.cookie('jwt', '', {
+    res.cookie("jwt", "", {
       httpOnly: true,
-      expires: new Date(0)
+      expires: new Date(0),
     });
     res.status(200).json({ message: "Dang xuat thanh cong" });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
-}
+};
+/* Lay thong tin user hien tai (Get Current User Profile) */
+export const getCurrentUserProfile = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    if (!req.user?._id) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    const user = (await UserModel.findById(req.user._id)) as User | null;
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    res.json({
+      _id: user._id,
+      fullName: user.fullName,
+      username: user.username,
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
