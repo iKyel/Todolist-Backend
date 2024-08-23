@@ -3,12 +3,13 @@ import express from "express";
 import cors from "cors";
 import { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
-import workRouter from "./routes/work.route";
 
 // db
 import connectDB from "./connection/db";
 
 // Routes
+import workRouter from "./routes/work.route";
+import userRouter from "./routes/user.route";
 
 dotenv.config(); // Load các biến môi trường từ file .env
 
@@ -23,7 +24,8 @@ app.use(cors());
 app.use(express.json());
 
 // route
-app.use("/api/works", workRouter)
+app.use("/api/works", workRouter);
+app.use("/api/users", userRouter);
 
 // Ket noi db
 connectDB();
