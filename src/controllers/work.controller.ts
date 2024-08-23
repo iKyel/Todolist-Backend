@@ -31,7 +31,6 @@ const fetchWorkItems = async (req: AuthenticatedRequest, res: Response) => {
 
 const fetchWorkItemById = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const userId = req.user?._id;
     const workItem = await WorkItem.findOne({ _id: req.params.id });
 
     if (workItem) {
@@ -112,7 +111,6 @@ const updateWorkItemDetails = async (
 ) => {
   try {
     const { text, completed } = req.body;
-    const userId = req.user?._id;
 
     const workItem = await WorkItem.findOneAndUpdate(
       { _id: req.params.id },
@@ -135,32 +133,10 @@ const updateWorkItemDetails = async (
   }
 };
 
-const fetchCompletedWorkItems = async (req: Request, res: Response) => {
-  try {
-    const workItems = await WorkItem.find({ completed: true });
-    res.json(workItems);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server Error" });
-  }
-};
-
-const fetchIncompleteWorkItems = async (req: Request, res: Response) => {
-  try {
-    const workItems = await WorkItem.find({ completed: false });
-    res.json(workItems);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server Error" });
-  }
-};
-
 export {
   fetchWorkItems,
   fetchWorkItemById,
   addWorkItem,
   removeWorkItem,
   updateWorkItemDetails,
-  fetchCompletedWorkItems,
-  fetchIncompleteWorkItems,
 };

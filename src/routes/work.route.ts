@@ -10,8 +10,6 @@ import {
   addWorkItem,
   removeWorkItem,
   updateWorkItemDetails,
-  fetchCompletedWorkItems,
-  fetchIncompleteWorkItems,
 } from "../controllers/work.controller";
 
 const workRouter = express.Router();
@@ -21,7 +19,4 @@ workRouter.route("/:id").get(verifyToken, fetchWorkItemById);
 workRouter.route("/").post(verifyToken, addWorkItem)
 workRouter.route("/:id").delete(verifyToken, removeWorkItem)
 workRouter.route("/:id").put(verifyToken, updateWorkItemDetails);
-workRouter.route("/completed").get(verifyToken, fetchCompletedWorkItems);
-workRouter.route("/incomplete").get(verifyToken, fetchIncompleteWorkItems);
-
 export default workRouter;
