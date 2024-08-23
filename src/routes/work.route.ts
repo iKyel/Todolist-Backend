@@ -1,5 +1,8 @@
 import express from "express";
 
+// middleware
+import { verifyToken } from "../middlewares/verifyToken.middleware";
+
 // controller
 import {
   fetchWorkItemById,
@@ -13,12 +16,12 @@ import {
 
 const workRouter = express.Router();
 
-workRouter.route("/").get(fetchWorkItems);
-workRouter.route("/:id").get(fetchWorkItemById);
-workRouter.route("/").post(addWorkItem)
-workRouter.route("/:id").delete(removeWorkItem)
-workRouter.route("/:id").put(updateWorkItemDetails);
-workRouter.route("/completed").get(fetchCompletedWorkItems);
-workRouter.route("/incomplete").get(fetchIncompleteWorkItems);
+workRouter.route("/").get(verifyToken, fetchWorkItems);
+workRouter.route("/:id").get(verifyToken, fetchWorkItemById);
+workRouter.route("/").post(verifyToken, addWorkItem)
+workRouter.route("/:id").delete(verifyToken, removeWorkItem)
+workRouter.route("/:id").put(verifyToken, updateWorkItemDetails);
+workRouter.route("/completed").get(verifyToken, fetchCompletedWorkItems);
+workRouter.route("/incomplete").get(verifyToken, fetchIncompleteWorkItems);
 
 export default workRouter;

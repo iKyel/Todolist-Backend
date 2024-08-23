@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import { WorkItemModel as WorkItem } from "../models/work.model";
+import { AuthenticatedRequest } from "../interface/AutheticatedRequest";
+import { UserModel } from "../models/user.models";
 
-const fetchWorkItems = async (req: Request, res: Response) => {
+const fetchWorkItems = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const pageSize = 50;
     const keyword = req.query.keyword
       ? {
           text: {
@@ -13,14 +14,14 @@ const fetchWorkItems = async (req: Request, res: Response) => {
         }
       : {};
 
-    const count = await WorkItem.countDocuments({ ...keyword });
-    const workItems = await WorkItem.find({ ...keyword }).limit(pageSize);
+    const completedFilter = req.body.completed !== undefined
+      ? { completed: req.body.completed === true }
+      : {};
+
+    const workItems = await WorkItem.find({ ...keyword, ...completedFilter });
 
     res.json({
       workItems,
-      page: 1,
-      pages: Math.ceil(count / pageSize),
-      hasMore: false,
     });
   } catch (error) {
     console.error(error);
@@ -28,14 +29,19 @@ const fetchWorkItems = async (req: Request, res: Response) => {
   }
 };
 
-const fetchWorkItemById = async (req: Request, res: Response) => {
+const fetchWorkItemById = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const workItem = await WorkItem.findById(req.params.id);
+    const userId = req.user?._id;
+    const workItem = await WorkItem.findOne({ _id: req.params.id });
+
     if (workItem) {
       return res.json(workItem);
     } else {
-      res.status(404);
-      throw new Error("Không tìm thấy công việc");
+      res
+        .status(404)
+        .json({
+          error: "Không tìm thấy công việc hoặc không có quyền truy cập",
+        });
     }
   } catch (error) {
     console.error(error);
@@ -43,32 +49,56 @@ const fetchWorkItemById = async (req: Request, res: Response) => {
   }
 };
 
-const addWorkItem = async (req: Request, res: Response) => {
+const addWorkItem = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { text, completed } = req.body;
+    const userId = req.user?._id;
 
-    if (text === undefined) {
+    if (!text) {
       return res.status(400).json({ error: "Phải có Text" });
     }
+
+    // Tạo mới WorkItem
     const workItem = new WorkItem({
       text,
       completed,
     });
-    await workItem.save();
-    res.status(201).json(workItem);
+
+    // Lưu WorkItem vào database
+    const savedWorkItem = await workItem.save();
+
+    // Tìm User theo userId và thêm workItem vào danh sách
+    await UserModel.findByIdAndUpdate(userId, {
+      $push: { workItems: savedWorkItem._id },
+    });
+
+    res.status(201).json(savedWorkItem);
   } catch (error) {
     console.error(error);
+    res.status(500).json({ error: "Server Error" });
   }
 };
 
-const removeWorkItem = async (req: Request, res: Response) => {
+const removeWorkItem = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const workItem = await WorkItem.findByIdAndDelete(req.params.id);
+    const userId = req.user?._id;
+    const workItem = await WorkItem.findOneAndDelete({
+      _id: req.params.id,
+    });
+    console.log(workItem)
+
     if (workItem) {
+      // Xóa workItem khỏi danh sách của User
+      await UserModel.findByIdAndUpdate(userId, {
+        $pull: { workItems: req.params.id },
+      });
       res.json({ message: "Đã xoá công việc" });
     } else {
-      res.status(404);
-      throw new Error("Work item not found");
+      res
+        .status(404)
+        .json({
+          error: "Không tìm thấy công việc hoặc không có quyền truy cập",
+        });
     }
   } catch (error) {
     console.error(error);
@@ -76,28 +106,32 @@ const removeWorkItem = async (req: Request, res: Response) => {
   }
 };
 
-const updateWorkItemDetails = async (req: Request, res: Response) => {
+const updateWorkItemDetails = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   try {
     const { text, completed } = req.body;
+    const userId = req.user?._id;
 
-    const workItem = await WorkItem.findByIdAndUpdate(
-      req.params.id,
-      {
-        text,
-        completed,
-      },
+    const workItem = await WorkItem.findOneAndUpdate(
+      { _id: req.params.id },
+      { text, completed },
       { new: true }
     );
 
     if (workItem) {
-      await workItem.save();
       res.json(workItem);
     } else {
-      res.status(404);
-      throw new Error("Work item not found");
+      res
+        .status(404)
+        .json({
+          error: "Không tìm thấy công việc hoặc không có quyền truy cập",
+        });
     }
   } catch (error) {
     console.error(error);
+    res.status(500).json({ error: "Server error" });
   }
 };
 

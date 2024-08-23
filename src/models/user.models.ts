@@ -1,10 +1,13 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
+import { WorkItem } from "./work.model"; // Import WorkItem interface
+import mongoose from "mongoose";
 
 export interface User extends Document {
   _id: string;
   fullName: string;
   username: string;
   password: string;
+  workItems: mongoose.Types.ObjectId[]; 
 }
 
 // Mongoose Schema
@@ -27,6 +30,12 @@ const UserSchema = new Schema<User>(
       required: [true, "Phải nhập mật khẩu!"],
       min: 8,
     },
+    workItems: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "WorkItem", // Reference to WorkItem model
+      },
+    ],
   },
   {
     timestamps: true,

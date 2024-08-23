@@ -21,6 +21,7 @@ export const register = async (req: Request, res: Response) => {
       fullName,
       username,
       password: passwordHash,
+      workItems: [],
     });
 
     const savedUser = await newUser.save();
@@ -59,6 +60,7 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+// Dang xuat
 export const logout = async (req: Request, res: Response) => {
   try {
     res.status(200).json({ message: "Dang xuat thanh cong" });
@@ -66,47 +68,15 @@ export const logout = async (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 };
-/* Lay thong tin user hien tai (Get Current User Profile) */
-export const getCurrentUserProfile = async (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
-  try {
-    const token = req.headers?.authorization?.split(" ")[1];
-    if (!token) {
-      return res.status(400).json({
-        status: false,
-        message: "Access Denined",
-      });
-    }
-    jwt.verify(token, jwtSecret, async (err, decode) => {
-      if (err) {
-        return res
-          .status(401)
-          .json({ status: false, message: "Invalid token" });
-      }
 
-      if (typeof decode === "object" && "id" in decode) {
-        const user = await UserModel.findById(decode.id);
-        if (!user)
-          return res
-            .status(400)
-            .json({ status: false, message: "Invalid Token" });
-        const userData = {
-          id: user?.id,
-          fullName: user?.fullName,
-          username: user?.username,
-        };
-        return res
-          .status(201)
-          .json({ status: true, message: "Profile Data", data: userData });
-      } else {
-        return res
-          .status(400)
-          .json({ status: false, message: "Invalid token payload" });
-      }
-    });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
+/* Lay thong tin user hien tai (Get Current User Profile) */
+export const getCurrentUserProfile = (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user;
+  const userData = {
+    id: user?.id,
+    fullName: user?.fullName,
+    username: user?.username,
+    workItems: user?.workItems,
+  };
+  return res.status(201).json({ status: true, message: "Profile Data", data: userData });
 };
