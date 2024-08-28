@@ -20,9 +20,7 @@ const fetchWorkItems = async (req: AuthenticatedRequest, res: Response) => {
 
     const workItems = await WorkItem.find({ ...keyword, ...completedFilter });
 
-    res.json({
-      workItems,
-    });
+    res.json({ workItems });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server Error" });
@@ -36,11 +34,9 @@ const fetchWorkItemById = async (req: AuthenticatedRequest, res: Response) => {
     if (workItem) {
       return res.json(workItem);
     } else {
-      res
-        .status(404)
-        .json({
-          error: "Không tìm thấy công việc hoặc không có quyền truy cập",
-        });
+      res.status(404).json({
+        error: "Không tìm thấy công việc hoặc không có quyền truy cập",
+      });
     }
   } catch (error) {
     console.error(error);
@@ -58,10 +54,7 @@ const addWorkItem = async (req: AuthenticatedRequest, res: Response) => {
     }
 
     // Tạo mới WorkItem
-    const workItem = new WorkItem({
-      text,
-      completed,
-    });
+    const workItem = new WorkItem({ text, completed });
 
     // Lưu WorkItem vào database
     const savedWorkItem = await workItem.save();
@@ -81,10 +74,7 @@ const addWorkItem = async (req: AuthenticatedRequest, res: Response) => {
 const removeWorkItem = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?._id;
-    const workItem = await WorkItem.findOneAndDelete({
-      _id: req.params.id,
-    });
-    console.log(workItem)
+    const workItem = await WorkItem.findOneAndDelete({ _id: req.params.id });
 
     if (workItem) {
       // Xóa workItem khỏi danh sách của User
@@ -93,11 +83,9 @@ const removeWorkItem = async (req: AuthenticatedRequest, res: Response) => {
       });
       res.json({ message: "Đã xoá công việc" });
     } else {
-      res
-        .status(404)
-        .json({
-          error: "Không tìm thấy công việc hoặc không có quyền truy cập",
-        });
+      res.status(404).json({
+        error: "Không tìm thấy công việc hoặc không có quyền truy cập",
+      });
     }
   } catch (error) {
     console.error(error);
@@ -121,11 +109,9 @@ const updateWorkItemDetails = async (
     if (workItem) {
       res.json(workItem);
     } else {
-      res
-        .status(404)
-        .json({
-          error: "Không tìm thấy công việc hoặc không có quyền truy cập",
-        });
+      res.status(404).json({
+        error: "Không tìm thấy công việc hoặc không có quyền truy cập",
+      });
     }
   } catch (error) {
     console.error(error);

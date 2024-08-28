@@ -22,7 +22,6 @@ export const register = async (req: Request, res: Response) => {
       fullName,
       username,
       password: passwordHash,
-      workItems: [],
     });
 
     const savedUser = await newUser.save();
@@ -65,46 +64,6 @@ export const login = async (req: Request, res: Response) => {
 export const logout = async (req: Request, res: Response) => {
   try {
     res.status(200).json({ message: "Dang xuat thanh cong" });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-/* Lay thong tin user hien tai (Get Current User Profile) */
-export const getCurrentUserProfile = (
-  req: AuthenticatedRequest,
-  res: Response
-) => {
-  const user = req.user;
-  const userData = {
-    id: user?.id,
-    fullName: user?.fullName,
-    username: user?.username,
-    workItems: user?.workItems,
-  };
-  return res
-    .status(201)
-    .json({ status: true, message: "Profile Data", data: userData });
-};
-
-/* Lay thong tin work item cua user */
-export const getWorkItem = async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    const user = await UserModel.findById(userId).populate({
-      path: "workItems"
-    });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    return res
-      .status(200)
-      .json({ status: true, message: "Work Items", data: user.workItems });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
