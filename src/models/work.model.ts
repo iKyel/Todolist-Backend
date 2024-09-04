@@ -1,8 +1,9 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
 
 export interface WorkItem extends Document {
   text: string;
   completed: boolean;
+  user: Types.ObjectId; // Reference to User
 }
 
 // Mongoose Schema
@@ -16,6 +17,11 @@ const WorkItemSchema = new Schema<WorkItem>(
       type: Boolean,
       required: false,
       default: false,
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
   },
   {

@@ -20,9 +20,7 @@ const fetchWorkItems = async (req: AuthenticatedRequest, res: Response) => {
 
     const workItems = await WorkItem.find({ ...keyword, ...completedFilter });
 
-    res.json({
-      workItems,
-    });
+    res.json({ workItems });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server Error" });
@@ -36,11 +34,9 @@ const fetchWorkItemById = async (req: AuthenticatedRequest, res: Response) => {
     if (workItem) {
       return res.json(workItem);
     } else {
-      res
-        .status(404)
-        .json({
-          error: "Không tìm thấy công việc hoặc không có quyền truy cập",
-        });
+      res.status(404).json({
+        error: "Không tìm thấy công việc hoặc không có quyền truy cập",
+      });
     }
   } catch (error) {
     console.error(error);
@@ -58,18 +54,10 @@ const addWorkItem = async (req: AuthenticatedRequest, res: Response) => {
     }
 
     // Tạo mới WorkItem
-    const workItem = new WorkItem({
-      text,
-      completed,
-    });
+    const workItem = new WorkItem({ text, completed, user: userId });
 
     // Lưu WorkItem vào database
     const savedWorkItem = await workItem.save();
-
-    // Tìm User theo userId và thêm workItem vào danh sách
-    await UserModel.findByIdAndUpdate(userId, {
-      $push: { workItems: savedWorkItem._id },
-    });
 
     res.status(201).json(savedWorkItem);
   } catch (error) {
@@ -83,21 +71,15 @@ const removeWorkItem = async (req: AuthenticatedRequest, res: Response) => {
     const userId = req.user?._id;
     const workItem = await WorkItem.findOneAndDelete({
       _id: req.params.id,
+      user: userId,
     });
-    console.log(workItem)
 
     if (workItem) {
-      // Xóa workItem khỏi danh sách của User
-      await UserModel.findByIdAndUpdate(userId, {
-        $pull: { workItems: req.params.id },
-      });
       res.json({ message: "Đã xoá công việc" });
     } else {
-      res
-        .status(404)
-        .json({
-          error: "Không tìm thấy công việc hoặc không có quyền truy cập",
-        });
+      res.status(404).json({
+        error: "Không tìm thấy công việc hoặc không có quyền truy cập",
+      });
     }
   } catch (error) {
     console.error(error);
@@ -111,25 +93,42 @@ const updateWorkItemDetails = async (
 ) => {
   try {
     const { text, completed } = req.body;
+    const userId = req.user?._id;
 
+    // Tìm và cập nhật WorkItem dựa trên _id và user
     const workItem = await WorkItem.findOneAndUpdate(
-      { _id: req.params.id },
+      { _id: req.params.id, user: userId },
       { text, completed },
-      { new: true }
+      { new: true } // Trả về tài liệu đã được cập nhật
     );
 
     if (workItem) {
       res.json(workItem);
     } else {
-      res
-        .status(404)
-        .json({
-          error: "Không tìm thấy công việc hoặc không có quyền truy cập",
-        });
+      res.status(404).json({
+        error: "Không tìm thấy công việc hoặc không có quyền truy cập",
+      });
     }
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server error" });
+  }
+};
+
+const fetchWorkItemsByUser = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?._id;
+    
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const workItems = await WorkItem.find({ user: userId });
+
+    res.json({ workItems });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server Error" });
   }
 };
 
@@ -139,4 +138,5 @@ export {
   addWorkItem,
   removeWorkItem,
   updateWorkItemDetails,
+  fetchWorkItemsByUser
 };
