@@ -68,3 +68,19 @@ export const logout = async (req: Request, res: Response) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// Profile
+export const profile = (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const user = req.user;
+  const userData = {
+    id: user?.id,
+    fullName: user?.fullName,
+    username: user?.username,
+  };
+  return res
+    .status(201)
+    .json({ status: true, message: "Profile Data", data: userData });
+};

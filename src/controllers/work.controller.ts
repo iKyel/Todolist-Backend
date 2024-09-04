@@ -115,10 +115,28 @@ const updateWorkItemDetails = async (
   }
 };
 
+const fetchWorkItemsByUser = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?._id;
+    
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const workItems = await WorkItem.find({ user: userId });
+
+    res.json({ workItems });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
 export {
   fetchWorkItems,
   fetchWorkItemById,
   addWorkItem,
   removeWorkItem,
   updateWorkItemDetails,
+  fetchWorkItemsByUser
 };
