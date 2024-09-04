@@ -54,15 +54,10 @@ const addWorkItem = async (req: AuthenticatedRequest, res: Response) => {
     }
 
     // Tạo mới WorkItem
-    const workItem = new WorkItem({ text, completed });
+    const workItem = new WorkItem({ text, completed, user: userId });
 
     // Lưu WorkItem vào database
     const savedWorkItem = await workItem.save();
-
-    // Tìm User theo userId và thêm workItem vào danh sách
-    await UserModel.findByIdAndUpdate(userId, {
-      $push: { workItems: savedWorkItem._id },
-    });
 
     res.status(201).json(savedWorkItem);
   } catch (error) {
@@ -74,13 +69,12 @@ const addWorkItem = async (req: AuthenticatedRequest, res: Response) => {
 const removeWorkItem = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?._id;
-    const workItem = await WorkItem.findOneAndDelete({ _id: req.params.id });
+    const workItem = await WorkItem.findOneAndDelete({
+      _id: req.params.id,
+      user: userId,
+    });
 
     if (workItem) {
-      // Xóa workItem khỏi danh sách của User
-      await UserModel.findByIdAndUpdate(userId, {
-        $pull: { workItems: req.params.id },
-      });
       res.json({ message: "Đã xoá công việc" });
     } else {
       res.status(404).json({
@@ -99,11 +93,13 @@ const updateWorkItemDetails = async (
 ) => {
   try {
     const { text, completed } = req.body;
+    const userId = req.user?._id;
 
+    // Tìm và cập nhật WorkItem dựa trên _id và user
     const workItem = await WorkItem.findOneAndUpdate(
-      { _id: req.params.id },
+      { _id: req.params.id, user: userId },
       { text, completed },
-      { new: true }
+      { new: true } // Trả về tài liệu đã được cập nhật
     );
 
     if (workItem) {
