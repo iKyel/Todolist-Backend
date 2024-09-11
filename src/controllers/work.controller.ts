@@ -48,13 +48,14 @@ const addWorkItem = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { text, completed } = req.body;
     const userId = req.user?._id;
+    const image = req.file ? req.file.path : "";
 
     if (!text) {
       return res.status(400).json({ error: "Phải có Text" });
     }
 
     // Tạo mới WorkItem
-    const workItem = new WorkItem({ text, completed, user: userId });
+    const workItem = new WorkItem({ text, completed, image, user: userId });
 
     // Lưu WorkItem vào database
     const savedWorkItem = await workItem.save();
@@ -92,13 +93,13 @@ const updateWorkItemDetails = async (
   res: Response
 ) => {
   try {
-    const { text, completed } = req.body;
+    const { text, completed, image } = req.body;
     const userId = req.user?._id;
 
     // Tìm và cập nhật WorkItem dựa trên _id và user
     const workItem = await WorkItem.findOneAndUpdate(
       { _id: req.params.id, user: userId },
-      { text, completed },
+      { text, completed, image },
       { new: true } // Trả về tài liệu đã được cập nhật
     );
 
