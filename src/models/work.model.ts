@@ -3,6 +3,7 @@ import { Schema, model, Document, Types } from "mongoose";
 export interface WorkItem extends Document {
   text: string;
   completed: boolean;
+  image: string;
   user: Types.ObjectId; // Reference to User
 }
 
@@ -17,6 +18,11 @@ const WorkItemSchema = new Schema<WorkItem>(
       type: Boolean,
       required: false,
       default: false,
+    },
+    image: {
+      type: String,
+      required: false,
+      default: "",
     },
     user: {
       type: Schema.Types.ObjectId,
