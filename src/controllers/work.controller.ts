@@ -75,7 +75,7 @@ const removeWorkItem = async (req: AuthenticatedRequest, res: Response) => {
     });
 
     if (workItem) {
-      res.json({ message: "Đã xoá công việc" });
+      res.json({ message: "Đã xoá việc" });
     } else {
       res.status(404).json({
         error: "Không thấy công việc hoặc không có quyền truy cập",
