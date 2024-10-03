@@ -6,7 +6,6 @@ import { verifyToken } from "../middlewares/verifyToken.middleware";
 // controller
 import {
   fetchWorkItemById,
-  fetchWorkItems,
   addWorkItem,
   removeWorkItem,
   updateWorkItemDetails,

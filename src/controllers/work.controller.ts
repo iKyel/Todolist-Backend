@@ -56,7 +56,6 @@ const addWorkItem = async (req: AuthenticatedRequest, res: Response) => {
 
     // Tạo mới WorkItem
     const workItem = new WorkItem({ text, completed, image, user: userId });
-
     // Lưu WorkItem vào database
     const savedWorkItem = await workItem.save();
 
@@ -79,7 +78,7 @@ const removeWorkItem = async (req: AuthenticatedRequest, res: Response) => {
       res.json({ message: "Đã xoá công việc" });
     } else {
       res.status(404).json({
-        error: "Không tìm thấy công việc hoặc không có quyền truy cập",
+        error: "Không thấy công việc hoặc không có quyền truy cập",
       });
     }
   } catch (error) {
@@ -93,14 +92,15 @@ const updateWorkItemDetails = async (
   res: Response
 ) => {
   try {
-    const { text, completed, image } = req.body;
+    const { text, completed } = req.body;
+    const image = req.file ? req.file.path : "";
     const userId = req.user?._id;
 
     // Tìm và cập nhật WorkItem dựa trên _id và user
     const workItem = await WorkItem.findOneAndUpdate(
       { _id: req.params.id, user: userId },
       { text, completed, image },
-      { new: true } // Trả về tài liệu đã được cập nhật
+      { new: true } 
     );
 
     if (workItem) {

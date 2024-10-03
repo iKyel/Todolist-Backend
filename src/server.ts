@@ -28,7 +28,6 @@ app.use(cookieParser());
 // sử dụng middleware để phân tích dữ liệu JSON
 app.use(express.json());
 
-
 // route
 app.use("/api/works", workRouter);
 app.use("/api/users", userRouter);
